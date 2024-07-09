@@ -1,18 +1,19 @@
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.sql import func
 
 from config import db
 from datetime import datetime
-
-db = SQLAlchemy()
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
     
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
+
     events = db.relationship('Event', backref='creator', lazy=True)
     registrations = db.relationship('Registration', backref='user', lazy=True)
 
@@ -31,6 +32,7 @@ class Event(db.Model, SerializerMixin):
     date = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(128), nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
     registrations = db.relationship('Registration', backref='event', lazy=True)
 
     # Serialization rules
@@ -41,7 +43,7 @@ class Event(db.Model, SerializerMixin):
 
     @staticmethod
     def validate_date(date):
-        if date < datetime.utcnow():
+        if date < func.now():
             raise ValueError("The event date cannot be in the past.")
 
 class Registration(db.Model, SerializerMixin):
@@ -51,7 +53,8 @@ class Registration(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
     review = db.Column(db.Text, nullable=True)
-    registered_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    registered_at = db.Column(db.DateTime, server_default=func.now(), nullable=False)
+
     user = db.relationship('User', back_populates='registrations')
     event = db.relationship('Event', back_populates='registrations')
     # Serialization rules
@@ -79,10 +82,10 @@ class Registration(db.Model, SerializerMixin):
         if 'location' not in data or len(data['location']) < 3:
             return "Event location must be at least 3 characters long."
     
-    try:
-        event_date = datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%S')
-        Event.validate_date(event_date)
-    except ValueError as e:
-        return str(e)
+        try:
+            event_date = datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%S')
+            Event.validate_date(event_date)
+        except ValueError as e:
+            return str(e)
 
-    return None
+        return None

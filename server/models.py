@@ -2,8 +2,6 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
 
 from config import db
-
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 db = SQLAlchemy()
@@ -61,29 +59,3 @@ class Registration(db.Model, SerializerMixin):
     def __repr__(self):
         return f"<Registration {self.id} by User {self.user_id} for Event {self.event_id}>"
 
-def validate_user_data(data):
-    if 'username' not in data or len(data['username']) < 3:
-        return "Username must be at least 3 characters long."
-    if 'email' not in data or not '@' in data['email']:
-        return "Invalid email address."
-    if 'password' not in data or len(data['password']) < 6:
-        return "Password must be at least 6 characters long."
-    return None
-
-def validate_event_data(data):
-    if 'title' not in data or len(data['title']) < 5:
-        return "Event title must be at least 5 characters long."
-    if 'description' not in data or len(data['description']) < 10:
-        return "Event description must be at least 10 characters long."
-    if 'date' not in data:
-        return "Event date is required."
-    if 'location' not in data or len(data['location']) < 3:
-        return "Event location must be at least 3 characters long."
-    
-    try:
-        event_date = datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%S')
-        Event.validate_date(event_date)
-    except ValueError as e:
-        return str(e)
-
-    return None

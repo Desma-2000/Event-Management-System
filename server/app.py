@@ -1,21 +1,29 @@
 #!/usr/bin/env python3
 
 # Standard library imports
-# Remote library imports
-from flask import request, make_response, jsonify
+from flask import request, make_response
 from flask_restful import Resource
 from flask_migrate import Migrate
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required, get_jwt, jwt_header
+from datetime import timedelta
+import random
+
 import os
 # Local imports
 from config import app, db, api
 # Add your model imports
-from models import User, Event
+from models import User, Event, Registration
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE = os.environ.get("DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}")
-
+app.config["JWT_SECRET_KEY"] = "dcvbgftyukns6qad"+str(random.randint(1,10000000000))
+app.config["SECRET_KEY"] = "s6hjx0an2mzoret"+str(random.randint(1,1000000000))
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 
 migrate = Migrate(app, db)
+bcrypt = Bcrypt(app)
+jwt = JWTManager(app)
 
 class Home(Resource):
     def get(self):
@@ -25,6 +33,62 @@ class Home(Resource):
         return make_response(response_body, 200)
 
 api.add_resource(Home, '/')
+
+class Login(Resource):
+    def post(self):
+        email = request.json['email', None]
+        password = request.json['password', None]
+
+        user = User.query.filter_by(email=email).first()
+        if user and bcrypt.check_password_hash(user.password, password):
+            access_token = create_access_token(identity=user.id)
+        
+            response_body = {
+                'access_token' : f'{access_token}'
+                }
+            return make_response(response_body, 200)
+        
+        else:
+            response_body = {
+                'Access Denied' : 'Username or password incorrect'
+                }
+            return make_response(response_body, 401)
+    
+api.add_resource(Login, '/login')
+
+class Current_User(Resource):
+    @jwt_required()
+    def get(self):
+        current_user_id = get_jwt_identity()
+        current_user = User.query.get(current_user_id)
+        if current_user:
+            current_user_dict = current_user_dict.to_dict()
+            return make_response(current_user_dict, 200)
+        else:
+            response_body = {
+                'message': 'User not current user'
+            }
+            return make_response(response_body, 404)
+api.add_resource(Current_User, '/current_user')
+
+BLACKLIST =set()
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blocklist(decrypted_token):
+    return decrypted_token['jti'] in BLACKLIST
+
+class Logout(Resource):
+    @jwt_required
+    def post(self):
+        jti = get_jwt()['jti']
+        BLACKLIST.add(jti)
+        
+        response_body = {
+            'message' : 'Successfully logged out'
+        }
+
+        return make_response(response_body, 200)
+
+api.add_resource(Logout, '/logout')
 
 class Users(Resource):
     def get(self):
@@ -40,7 +104,7 @@ class Users(Resource):
             last_name = request.json['last_name'],
             email = request.json['email'],
             username = request.json['username'],
-            password = request.json['password'],
+            password = bcrypt.generate_password_hash(request.json['password']).decode('utf-8'),
             )
 
             db.session.add(new_user)
@@ -200,6 +264,91 @@ class EventsByID(Resource):
             return make_response(response_body, 404)
          
 api.add_resource(EventsByID, '/events/<int:id>')
+
+class Registrations(Resource):
+    def get(self):
+        registrations = [registration.to_dict() for registration in Registration.query.all()]
+
+        response = make_response(registrations, 200)
+        return response
+    def post():
+        try:
+            new_registration = Registration(
+                name = request.json['name'],
+                location = request.json['location'],
+                date = request.json['date'],
+                speaker = request.json['speaker']
+            )
+            db.session.add(new_registration)
+            db.session.commit()
+
+            registration_dict = new_registration.to_dict()
+            response = make_response(registration_dict, 201)
+
+            return response
+        except ValueError:
+            response_body = {
+                'error': 'error occurred'
+            }
+            return make_response(response_body, 400)
+        
+api.add_resource(Registrations, '/events')
+        
+class RegistrationsByID(Resource):
+    def get(self,id):
+        registration = Registration.query.filter_by(id=id).first()
+        if registration:
+            registration_dict = registration.to_dict()
+            return make_response(registration_dict, 200)
+        else:
+            response_body = {
+                'message' : 'Registration does not exist! Check the id again.'
+            }
+
+            return make_response(response_body, 404)
+        
+    def delete(self, id):
+        registration = Registration.query.filter_by(id=id).first()
+        if registration:
+            db.session.delete(registration)
+            db.session.commit()
+
+            response_body = {
+                'message': 'Registration deleted Successfully'
+            }
+            return make_response(response_body, 200)
+        else:
+            response_body = {
+                'message' : 'Registration does not exist! Check the id again.'
+            }
+
+            return make_response(response_body, 404)
+        
+    def patch(self,id):
+         registration = Registration.query.filter_by(id=id).first()
+         if registration:
+            try:
+                for attr in request.json:
+                    setattr(registration, attr, request.json.get(attr))
+
+                db.session.add(registration)
+                db.session.commit()
+
+                registration_dict = registration.to_dict
+                return make_response(registration_dict, 200)
+            
+            except ValueError:
+                response_body = {
+                    'error': 'error occured'
+                }
+         else:
+            response_body = {
+                'message' : 'Event you are trying to Edit does not exist! Check the id again.'
+            }
+
+            return make_response(response_body, 404)
+         
+api.add_resource(RegistrationsByID, '/events/<int:id>')
 
 
 if __name__ == '__main__':

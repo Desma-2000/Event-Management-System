@@ -26,13 +26,13 @@ class Home(Resource):
 
 api.add_resource(Home, '/')
 
-class Login(Resource):
+class Users(Resource):
     def get(self):
-      pass
-        
-api.add_resource(Login, '/login')
-
-class UserRegistration(Resource):
+        users = [user.to_dict() for user in User.query.all()]
+            
+        response = make_response(users, 200)
+            
+        return response
     def post(self):
         try:
             new_user = User (
@@ -41,7 +41,8 @@ class UserRegistration(Resource):
             email = request.json['email'],
             username = request.json['username'],
             password = request.json['password'],
-        )
+            )
+
             db.session.add(new_user)
             db.session.commit()
 
@@ -55,7 +56,65 @@ class UserRegistration(Resource):
             }
             return make_response(response_body, 400)
 
-api.add_resource(UserRegistration, '/register_user')
+api.add_resource(Users, '/users')
+
+class UsersByID(Resource):
+    def get(self,id):
+         user = User.query.filter_by(id=id).first()
+         if user:
+            user_dict = user.to_dict()
+            
+            return make_response(user_dict, 200)
+         
+         else:
+            response_body = {
+                'message' : 'User does not exist! Check the id again.'
+            }
+
+            return make_response(response_body, 404)
+        
+    def delete(self, id):
+        user = User.query.filter_by(id=id).first()
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+
+            response_body = {
+                'message': 'User deleted Successfully'
+            }
+            return make_response(response_body, 200)
+        else:
+            response_body = {
+                'message' : 'User does not exist! Check the id again.'
+            }
+
+            return make_response(response_body, 404)
+        
+    def patch(self,id):
+         user = User.query.filter_by(id=id).first()
+         if user:
+            try:
+                for attr in request.json:
+                    setattr(user, attr, request.json.get(attr))
+
+                db.session.add(user)
+                db.session.commit()
+
+                user_dict = user.to_dict
+                return make_response(user_dict, 200)
+            
+            except ValueError:
+                response_body = {
+                    'error': 'error occured'
+                }
+         else:
+            response_body = {
+                'message' : 'User you are trying to Edit does not exist! Check the id again.'
+            }
+
+            return make_response(response_body, 404)
+         
+api.add_resource(UsersByID, '/users/<int:id>')
 
 class Events(Resource):
     def get(self):
@@ -102,7 +161,7 @@ class EventsByID(Resource):
     def delete(self, id):
         event = Event.query.filter_by(id=id).first()
         if event:
-            db.session.delete()
+            db.session.delete(event)
             db.session.commit()
 
             response_body = {
@@ -123,7 +182,7 @@ class EventsByID(Resource):
                 for attr in request.json:
                     setattr(event, attr, request.json.get(attr))
 
-                db.session.add()
+                db.session.add(event)
                 db.session.commit()
 
                 event_dict = event.to_dict

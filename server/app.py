@@ -102,9 +102,9 @@ class Users(Resource):
         try:
             new_user = User (
                 name = request.json['name'],
-                email = request.json['email'],
                 username = request.json['username'],
-                password= bcrypt.generate_password_hash(request.json['password_hash']).decode('utf-8'),
+                email = request.json['email'],
+                password_hash= bcrypt.generate_password_hash(request.json['password_hash']).decode('utf-8'),
             )
 
 
@@ -194,6 +194,7 @@ class Events(Resource):
                 description = request.json['description'],
                 date = request.json['date'],
                 location = request.json['location'],
+                no_of_registrations = request.json['no_of_registrations'],
                 creator_id = request.json['creator_id']
             )
 
@@ -279,7 +280,6 @@ class Registrations(Resource):
             new_registration = Registration(
                 registered_at = request.json['registered_at'],
                 review = request.json['review'],
-                user_id = request.json['user_id'],
                 event_id = request.json['event_id']
             )
             

@@ -20,6 +20,7 @@ DATABASE = os.environ.get("DB_URI", f"sqlite:///{os.path.join(BASE_DIR, 'app.db'
 app.config["JWT_SECRET_KEY"] = "dcvbgftyukns6qad"+str(random.randint(1,10000000000))
 app.config["SECRET_KEY"] = "s6hjx0an2mzoret"+str(random.randint(1,1000000000))
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+app.config['ACCESS_TOKEN_EXPIRES'] = False
 
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
@@ -36,11 +37,11 @@ api.add_resource(Home, '/')
 
 class Login(Resource):
     def post(self):
-        email = request.json['email', None]
-        password = request.json['password', None]
+        email = request.json.get('email', None)
+        password = request.json.get('password_hash', None)
 
         user = User.query.filter_by(email=email).first()
-        if user and bcrypt.check_password_hash(user.password, password):
+        if user and bcrypt.check_password_hash(user.password_hash, password):
             access_token = create_access_token(identity=user.id)
         
             response_body = {
@@ -50,7 +51,7 @@ class Login(Resource):
         
         else:
             response_body = {
-                'Access Denied' : 'Username or password incorrect'
+                'Access Denied' : 'Username or Password incorrect'
                 }
             return make_response(response_body, 401)
     
@@ -62,7 +63,7 @@ class Current_User(Resource):
         current_user_id = get_jwt_identity()
         current_user = User.query.get(current_user_id)
         if current_user:
-            current_user_dict = current_user_dict.to_dict()
+            current_user_dict = current_user.to_dict()
             return make_response(current_user_dict, 200)
         else:
             response_body = {
@@ -74,11 +75,11 @@ api.add_resource(Current_User, '/current_user')
 
 BLACKLIST =set()
 @jwt.token_in_blocklist_loader
-def check_if_token_in_blocklist(decrypted_token):
+def check_if_token_in_blocklist(jwt_header, decrypted_token):
     return decrypted_token['jti'] in BLACKLIST
 
 class Logout(Resource):
-    @jwt_required
+    @jwt_required()
     def post(self):
         jti = get_jwt()['jti']
         BLACKLIST.add(jti)

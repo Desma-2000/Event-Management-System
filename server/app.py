@@ -5,7 +5,7 @@ from flask import request, make_response
 from flask_restful import Resource
 from flask_migrate import Migrate
 from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required, get_jwt, jwt_header
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required, get_jwt
 from datetime import timedelta
 import random
 
@@ -69,6 +69,7 @@ class Current_User(Resource):
                 'message': 'User not current user'
             }
             return make_response(response_body, 404)
+        
 api.add_resource(Current_User, '/current_user')
 
 BLACKLIST =set()
@@ -100,12 +101,12 @@ class Users(Resource):
     def post(self):
         try:
             new_user = User (
-            first_name = request.json['first_name'],
-            last_name = request.json['last_name'],
-            email = request.json['email'],
-            username = request.json['username'],
-            password = bcrypt.generate_password_hash(request.json['password']).decode('utf-8'),
+                name = request.json['name'],
+                email = request.json['email'],
+                username = request.json['username'],
+                password= bcrypt.generate_password_hash(request.json['password_hash']).decode('utf-8'),
             )
+
 
             db.session.add(new_user)
             db.session.commit()
@@ -189,11 +190,13 @@ class Events(Resource):
     def post():
         try:
             new_event = Event(
-                name = request.json['name'],
-                location = request.json['location'],
+                title = request.json['title'],
+                description = request.json['description'],
                 date = request.json['date'],
-                speaker = request.json['speaker']
+                location = request.json['location'],
+                creator_id = request.json['creator_id']
             )
+
             db.session.add(new_event)
             db.session.commit()
 
@@ -274,11 +277,12 @@ class Registrations(Resource):
     def post():
         try:
             new_registration = Registration(
-                name = request.json['name'],
-                location = request.json['location'],
-                date = request.json['date'],
-                speaker = request.json['speaker']
+                registered_at = request.json['registered_at'],
+                review = request.json['review'],
+                user_id = request.json['user_id'],
+                event_id = request.json['event_id']
             )
+            
             db.session.add(new_registration)
             db.session.commit()
 

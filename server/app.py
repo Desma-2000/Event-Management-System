@@ -296,7 +296,7 @@ class Registrations(Resource):
             }
             return make_response(response_body, 400)
         
-api.add_resource(Registrations, '/events')
+api.add_resource(Registrations, '/registrations')
         
 class RegistrationsByID(Resource):
     def get(self,id):
@@ -352,7 +352,7 @@ class RegistrationsByID(Resource):
 
             return make_response(response_body, 404)
          
-api.add_resource(RegistrationsByID, '/events/<int:id>')
+api.add_resource(RegistrationsByID, '/registrations/<int:id>')
 
 
 if __name__ == '__main__':

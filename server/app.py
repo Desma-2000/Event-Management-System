@@ -104,7 +104,7 @@ class Users(Resource):
                 name = request.json['name'],
                 username = request.json['username'],
                 email = request.json['email'],
-                password= bcrypt.generate_password_hash(request.json['password_hash']).decode('utf-8'),
+                password_hash= bcrypt.generate_password_hash(request.json['password_hash']).decode('utf-8'),
             )
 
 
@@ -194,6 +194,7 @@ class Events(Resource):
                 description = request.json['description'],
                 date = request.json['date'],
                 location = request.json['location'],
+                no_of_registrations = request.json['no_of_registrations'],
                 creator_id = request.json['creator_id']
             )
 

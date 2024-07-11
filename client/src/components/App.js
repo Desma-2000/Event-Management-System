@@ -1,21 +1,26 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Login from './Login';
+import Register from './Register';
 import Logout from './Logout';
-import Register from './Register'; // Import Register component
-// Import other components as needed
+import Events from './Events';
+import CreateEvent from './CreateEvent';
+import Homepage from '../../../frontend/src/Homepage';
 
 function App() {
-    return (
-        <Router>
-            <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/logout" element={<Logout />} />
-                <Route path="/register" element={<Register />} /> {/* Add Register route */}
-                {/* Add other routes here */}
-            </Routes>
-        </Router>
-    );
+  return (
+    <Router>
+      <div>
+        <Switch>
+          <Route path="/login" component={Login} />
+          <Route path="/register" component={Register} />
+          <Route path="/logout" component={Logout} />
+          <Route path="/events" component={Events} />
+          <Route path="/create-event" component={CreateEvent} />
+        </Switch>
+      </div>
+    </Router>
+  );
 }
 
 export default App;

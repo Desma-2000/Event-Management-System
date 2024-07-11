@@ -1,9 +1,15 @@
 from sqlalchemy_serializer import SerializerMixin
-
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.sql import func
-from config import db
+from sqlalchemy import MetaData
+from flask_sqlalchemy import SQLAlchemy
+
+# from config import db
 from datetime import datetime
+
+metadata = MetaData(naming_convention={
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+})
+db = SQLAlchemy(metadata=metadata)
 
 
 
@@ -17,8 +23,9 @@ class User(db.Model, SerializerMixin):
     password_hash = db.Column(db.String(128), nullable=False)
 
     events = db.relationship('Event', back_populates="creator", cascade = 'all, delete-orphan')
+   
     # Serialization rules
-    serialize_rules = ('-password_hash', '-events.creator', '-registrations.user')
+    serialize_rules = ('-password_hash','-events.users', )
 
     def __repr__(self):
      return f"<User {self.username}>"
@@ -38,7 +45,7 @@ class Event(db.Model, SerializerMixin):
     registrations = db.relationship('Registration', back_populates = 'event', cascade = 'all, delete-orphan', lazy=True)
 
     # Serialization rules
-    serialize_rules = ('-creator.events', '-registrations.event')
+    serialize_rules = ('-creator.events', '-registrations.events',)
 
     def __repr__(self):
         return f"<Event {self.title} at {self.location} on {self.date}>"
@@ -59,7 +66,7 @@ class Registration(db.Model, SerializerMixin):
     event = db.relationship('Event', back_populates='registrations')
    
     # Serialization rules
-    serialize_rules = ('-event.registrations')
+    serialize_rules = ('-event.registrations',)
 
     def __repr__(self):
         return f"<Registration {self.id} by User {self.user_id} for Event {self.event_id}>"

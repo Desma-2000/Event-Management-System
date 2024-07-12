@@ -9,6 +9,7 @@ from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required, get_jwt
 from datetime import timedelta
 import random, os
+from flask_cors import CORS
 
 # from config import app, db, api
 # Add your model imports

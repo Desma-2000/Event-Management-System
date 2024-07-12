@@ -17,12 +17,8 @@ function Homepage() {
                     <li>
                         <Link to = { `/login`}>Login</Link>
                     </li>
-                    
                     <li>
                         <Link to = { `/events`}>Events</Link>
-                    </li>
-                    <li>
-                        <Link to = { `/register`}>Register</Link>
                     </li>
                     <li>
                         <Link to = { `/createEvent`}>create Event</Link>

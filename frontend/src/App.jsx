@@ -2,9 +2,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Switch ,Link} from 'react-router-dom';
 import Login from './login';
-import Register from './register';
+import Register from './Register';
 import Logout from './logout';
-import Events from './events';
+import Events from './Events';
 import Homepage from './Homepage';
 
 

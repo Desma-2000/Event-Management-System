@@ -9,6 +9,8 @@ import "./index.css";
 import Homepage from './Homepage';
 import ErrorPage from './errorpage';
 import Login from './login';
+import CreateEvent from './CreateEvent';
+import Events from './Events';
 
 
 
@@ -23,6 +25,15 @@ const router = createBrowserRouter([
         path: "/login",
         element: <Login />,
       },
+      {
+        path: "/createEvent",
+        element: <CreateEvent/>,
+      },
+      {
+        path: "/events",
+        element:<Events/>
+      }
+      
       
       
     

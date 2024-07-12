@@ -1,8 +1,11 @@
 from sqlalchemy_serializer import SerializerMixin
-from sqlalchemy.sql import func
 
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.sql import func
 from config import db
 from datetime import datetime
+
+
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
@@ -28,10 +31,10 @@ class Event(db.Model, SerializerMixin):
     description = db.Column(db.Text, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
     location = db.Column(db.String(128), nullable=False)
-    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    no_of_registrations = db.Column(db.Integer, nullable=False)
+    creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     creator = db.relationship('User', back_populates = 'events')
-    # , cascade = 'all, delete-orphan', lazy=True)
     registrations = db.relationship('Registration', back_populates = 'event', cascade = 'all, delete-orphan', lazy=True)
 
     # Serialization rules
@@ -51,12 +54,12 @@ class Registration(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     review = db.Column(db.Text, nullable=True)
     registered_at = db.Column(db.DateTime, server_default=func.now(), nullable=False)
-    event_id = db.Column(db.Integer, db.ForeignKey('events.id'))
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
 
     event = db.relationship('Event', back_populates='registrations')
-    # , cascade = 'all, delete-orphan')
+   
     # Serialization rules
-    serialize_rules = ('-user.registrations', '-event.registrations')
+    serialize_rules = ('-event.registrations')
 
     def __repr__(self):
         return f"<Registration {self.id} by User {self.user_id} for Event {self.event_id}>"
@@ -69,7 +72,7 @@ class Registration(db.Model, SerializerMixin):
             return "Invalid email address."
         if 'password' not in data or len(data['password']) < 6:
             return "Password must be at least 6 characters long."
-        return None
+            return None
 
     @staticmethod
     def validate_event_data(data):
@@ -82,10 +85,9 @@ class Registration(db.Model, SerializerMixin):
         if 'location' not in data or len(data['location']) < 3:
             return "Event location must be at least 3 characters long."
 
-        try:
-            event_date = datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%S')
-            Event.validate_date(event_date)
-        except ValueError as e:
-            return str(e)
-
-        return None
+            try:
+                event_date = datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%S')
+                Event.validate_date(event_date)
+            except ValueError as e:
+                    return str(e)
+                    return None

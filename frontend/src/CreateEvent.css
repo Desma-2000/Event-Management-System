@@ -1,0 +1,76 @@
+
+
+.create-event-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: rgb(89, 89, 175);
+  }
+  
+  .create-event-form {
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center; /* Center align content inside the form */
+  }
+  
+  .create-event-form .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .create-event-form label {
+    display: block;
+    margin-bottom: 5px;
+    text-align: left; /* Left align labels */
+  }
+  
+  .create-event-form input,
+  .create-event-form button {
+    width: calc(100% - 20px); /* Adjust width to leave some space for padding */
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  .create-event-form button {
+    background-color: green;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .create-event-form button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  .success-message {
+    text-align: center;
+    color: rgb(128, 0, 53);
+    margin-top: 10px;
+  }
+  
+  /* Style for edit and delete buttons */
+  .edit-delete-buttons {
+    margin-top: 20px;
+  }
+  
+  .edit-delete-buttons button {
+    width: calc(50% - 5px); /* Adjust width to fit two buttons side by side */
+    padding: 10px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .edit-delete-buttons button:nth-child(2) {
+    margin-right: 0; /* Remove margin-right for the last button */
+    background-color: red;
+  }

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api'; // Update with your backend URL
+const API_URL = 'http://localhost:3000'; // Update with your backend URL
 
 export const loginUser = async (credentials) => {
   const response = await axios.post(`${API_URL}/login`, credentials);

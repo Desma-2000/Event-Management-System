@@ -5,6 +5,7 @@ from faker import Faker
 from app import app
 from models import db, User, Event, Registration
 import random
+from datetime import datetime
 
 with app.app_context():
     
@@ -33,7 +34,8 @@ with app.app_context():
         event = Event(
             title=fake.sentence(nb_words=5),
             description=fake.text(max_nb_chars=200),
-            date=fake.date_time_between(start_date='-1y', end_date='+1y'),
+            # date=fake.date(start_date='-1y', end_date='+1y'),
+              date=fake.date_time_this_year(),
             location=fake.city(),
             no_of_registrations = fake.random_digit(),
             creator_id=user.id

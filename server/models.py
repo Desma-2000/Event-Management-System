@@ -18,7 +18,7 @@ class User(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-    username = db.Column(db.String(64), unique=True, nullable=False)
+    username = db.Column(db.String(64), unique=True, nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
@@ -35,8 +35,8 @@ class Event(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(128), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    date = db.Column(db.DateTime, nullable=False)
+    description = db.Column(db.String, nullable=False)
+    date = db.Column(db.Date, nullable=False)
     location = db.Column(db.String(128), nullable=False)
     no_of_registrations = db.Column(db.Integer, nullable=False)
     creator_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -91,10 +91,9 @@ class Registration(db.Model, SerializerMixin):
             return "Event date is required."
         if 'location' not in data or len(data['location']) < 3:
             return "Event location must be at least 3 characters long."
-
-            try:
-                event_date = datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%S')
-                Event.validate_date(event_date)
-            except ValueError as e:
-                    return str(e)
-                    return None
+        try:
+            event_date = datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%S')
+            Event.validate_date(event_date)
+        except ValueError as e:
+            return str(e)
+        return None
